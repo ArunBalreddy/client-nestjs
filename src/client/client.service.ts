@@ -1,6 +1,74 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from 'src/prisma/prisma.service';
-import { } from 'prisma/prisma-client'
+import { ResponseDto } from './dtos/client.dto';
+
+
+export const selectData =  {
+    id: true,
+    incorporation_date: true,
+    fee: true,
+    from_date: true,
+    to_date: true,
+    pan: true,
+    gstn: true,
+    tin: true,
+    cin: true,
+    std: true,
+    land_line: true,
+    website: true,
+    job_code: true,
+    status: true,
+    admin_email: true,
+    admin_first_name: true,
+    admin_last_name: true,
+    admin_middle_name: true,
+    admin_mobile_number: true,
+    category_id: true,
+    category: {
+        select: {
+            id: true,
+            name: true,
+            description: true,
+        }
+    },
+    job_department_id: true,
+    job_department: {
+        select: {
+            id: true,
+            name: true,
+            activity_code: true,
+        }
+    },
+    department_id: true,
+    department: {
+        select: {
+            id: true,
+            name: true,
+            description: true,
+        }
+    },
+    client_id: true,
+    client: {
+        select: {
+            id: true,
+            name: true,
+            client_code: true,
+        }
+    },
+    locations: {
+        select: {
+            id: true,
+            address_1: true,
+            address_2: true,
+            location: true,
+            location_type: true,
+            pincode: true,
+            city: true,
+            state: true,
+            country: true,
+        }
+    }
+}
 
 @Injectable()
 export class ClientService {
@@ -55,150 +123,42 @@ export class ClientService {
         return { client, clientDetails, location }
     }
 
-    async getCleints() {
-        const response = await this.prismaService.clientDetails.findMany({
+    async getClients(): Promise<ResponseDto[]> {
+        const response = await this.prismaService.clientDetails.findMany(
+            {
             select: {
-                id: true,
                 is_delete: true,
-                incorporation_date: true,
-                fee: true,
-                from_date: true,
-                to_date: true,
-                pan: true,
-                gstn: true,
-                tin: true,
-                cin: true,
-                std: true,
-                land_line: true,
-                website: true,
-                job_code: true,
-                status: true,
-                category_id: true,
-                category: {
-                    select: {
-                        id: true,
-                        name: true,
-                        description: true,
-                    }
-                },
-                job_department_id: true,
-                job_department: {
-                    select: {
-                        id: true,
-                        name: true,
-                        activity_code: true,
-                    }
-                },
-                department_id: true,
-                department: {
-                    select: {
-                        id: true,
-                        name: true,
-                        description: true,
-                    }
-                },
-                client_id: true,
-                client: {
-                    select: {
-                        id: true,
-                        name: true,
-                        client_code: true,
-                    }
-                },
-                locations: {
-                    select: {
-                        id: true,
-                        address_1: true,
-                        address_2: true,
-                        location: true,
-                        location_type: true,
-                        pincode: true,
-                        city: true,
-                        state: true,
-                        country: true,
-                    }
-                }
+                ...selectData,
             }
-        })
+           }
+           )
+    
         const filteredClients = response.filter(client => (client.is_delete === "No"))
-        return filteredClients
+        if (filteredClients.length === 0) throw new NotFoundException({message: "There is no Clients to show"})
+        const responseData = filteredClients.map(client => new ResponseDto(client))
+        return responseData
     }
 
-    async getClient(id: number) {
-        const client = await this.getClientById(id)
-        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'There is no client on this id' })
+    async getClient(id: number): Promise<ResponseDto> {
+        const client = await this.getClientDetailsById(id)
+        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'This client has been deleted' })
         const response = await this.prismaService.clientDetails.findUnique({
             where: {
                 id,
             },
             select: {
-                id: true,
-                incorporation_date: true,
-                fee: true,
-                from_date: true,
-                to_date: true,
-                pan: true,
-                gstn: true,
-                tin: true,
-                cin: true,
-                std: true,
-                land_line: true,
-                website: true,
-                job_code: true,
-                status: true,
-                category_id: true,
-                category: {
-                    select: {
-                        id: true,
-                        name: true,
-                        description: true,
-                    }
-                },
-                job_department_id: true,
-                job_department: {
-                    select: {
-                        id: true,
-                        name: true,
-                        activity_code: true,
-                    }
-                },
-                department_id: true,
-                department: {
-                    select: {
-                        id: true,
-                        name: true,
-                        description: true,
-                    }
-                },
-                client_id: true,
-                client: {
-                    select: {
-                        id: true,
-                        name: true,
-                        client_code: true,
-                    }
-                },
-                locations: {
-                    select: {
-                        id: true,
-                        address_1: true,
-                        address_2: true,
-                        location: true,
-                        location_type: true,
-                        pincode: true,
-                        city: true,
-                        state: true,
-                        country: true,
-                    }
-                }
+                ...selectData,
+                is_delete: true
             }
         })
-        return response
+        return new ResponseDto(response)
     }
 
-    async updateClientDetails(body, id: number,) {
+    async updateClientDetails(body, id: number) {
         const client = await this.getClientById(id)
-        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'There is no client on this id' })
+      
+        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'This client has been deleted' })
+      
         const updatedClient = await this.prismaService.client.update({
             where: {
                 id
@@ -236,12 +196,12 @@ export class ClientService {
                 admin_mobile_number: body.mobile_number
             }
         })
-        return { updatedClient, updatedClientDetails }
+        return updatedClientDetails 
     }
 
     async updateClientLocation(body, clientId: number, locationId: number) {
         const client = await this.getClientById(clientId)
-        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'There is no client on this id' })
+        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'This client has been deleted'})
         const updatedClientLocation = await this.prismaService.location.update({
             where: {
                 id: locationId,
@@ -262,8 +222,8 @@ export class ClientService {
     }
 
     async deleteClient(id: number) {
-        const client = await this.getClientById(id)
-        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'There is no client on this id' })
+        const client = await this.getClientDetailsById(id)
+        if (client.is_delete === "Yes") throw new NotFoundException({ message: 'This client has been deleted' })
         const deletedClient = await this.prismaService.client.update({
             where: {
                 id
@@ -291,12 +251,23 @@ export class ClientService {
         return { deletedClient, deletedClientDetails, deletedClientLocations }
     }
 
-    async getClientById(id: number) {
+    async getClientDetailsById(id: number) {
         const response = await this.prismaService.clientDetails.findUnique({
             where: {
                 id,
             }
         })
+        if (!response) throw new NotFoundException({message: "There is no client on this id"})
+        return response
+    }
+
+    async getClientById(id: number) {
+        const response = await this.prismaService.client.findUnique({
+            where: {
+                id,
+            }
+        })
+        if (!response) throw new NotFoundException({message: "There is no client on this id"})
         return response
     }
 }

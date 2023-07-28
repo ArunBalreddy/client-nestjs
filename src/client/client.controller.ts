@@ -1,5 +1,5 @@
 import { Body, Controller, Post, Get, Put, Delete, Param, ParseIntPipe } from '@nestjs/common';
-import { CreateClientDto, UpdateClientDto, UpdateClientLocationDto } from './dtos/client.dto'
+import { CreateClientDto, ResponseDto, UpdateClientDto, UpdateClientLocationDto } from './dtos/client.dto'
 import { ClientService } from './client.service';
 
 @Controller('client')
@@ -15,14 +15,14 @@ export class ClientController {
     }
 
     @Get()
-    async getAllClients() {
-        return await this.clientService.getCleints()
+    async getAllClients(): Promise<ResponseDto[]> {
+        return await this.clientService.getClients()
     }
 
     @Get("/:id")
     async getClientById(
         @Param("id", ParseIntPipe) id: number
-    ) {
+    ): Promise<ResponseDto> {
         const client = await this.clientService.getClient(id)
         return client
     }
@@ -31,6 +31,7 @@ export class ClientController {
     async updateClientDetails(
         @Param('id') id: number,
         @Body() body: UpdateClientDto) {
+            console.log(body)
         return await this.clientService.updateClientDetails(body, id)
     }
 

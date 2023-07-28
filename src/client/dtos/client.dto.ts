@@ -1,5 +1,6 @@
 import { IsString, IsNotEmpty, IsPositive, IsOptional, IsEmail, IsDate, Matches } from "class-validator";
-
+import {Exclude, Expose} from 'class-transformer'
+import { EXCEPTION_FILTERS_METADATA } from "@nestjs/common/constants";
 
 export class CreateClientDto {
 
@@ -153,10 +154,10 @@ export class UpdateClientDto {
     @IsNotEmpty()
     name: string;
 
-    @IsOptional()
-    @IsString()
-    @IsNotEmpty()
-    client_code: string;
+    // @IsOptional()
+    // @IsString()
+    // @IsNotEmpty()
+    // client_code: string;
 
     @IsOptional()
     @IsNotEmpty()
@@ -267,3 +268,146 @@ export class UpdateClientLocationDto {
 
 }
 
+export class ResponseDto {
+    @Exclude()
+    is_delete: string;
+    id: number;
+
+    // @Exclude()
+    incorporation_date: Date;
+
+    @Exclude()
+    fee: number;
+    @Exclude()
+    from_date: Date;
+    @Exclude()
+    to_date: Date;
+    @Exclude()
+    pan: string;
+    @Exclude()
+    gstn: string;
+    @Exclude()
+    tin: string;
+    @Exclude()
+    cin: string;
+    @Exclude()
+    std: string;
+    @Exclude()
+    land_line: string;
+    @Exclude()
+    website: string;
+    @Exclude()
+    job_code: string;
+    @Exclude()
+    status: string;
+    @Exclude()
+    admin_email: string;
+    @Exclude()
+    admin_first_name: string;
+    @Exclude()
+    admin_last_name: string;
+    @Exclude()
+    admin_middle_name: string;
+    @Exclude()
+    admin_mobile_number: string;
+    @Exclude()
+    category_id: number;
+
+    @Exclude()
+    category: {
+      id: number;
+      name: string;
+      description: string;
+    };
+
+    @Exclude()
+    job_department_id: number;
+    @Exclude()
+    job_department: {
+      id: number;
+      name: string;
+      activity_code: string;
+    };
+    @Exclude()
+    department_id: number;
+    @Exclude()
+    department: {
+      id: number;
+      name: string;
+      description: string;
+    };
+
+    @Exclude()
+    client_id: number;
+
+    @Exclude()
+    client: {
+      id: number;
+      name: string;
+      client_code: string;
+    };
+
+    @Exclude()
+    locations: 
+      {
+        id: number;
+        address_1: string;
+        address_2: string;
+        location: string;
+        location_type: string;
+        pincode: number;
+        city: string;
+        state: string;
+        country: string;
+      }[]
+
+      @Expose({name: 'clientName'})
+      transformClient(){
+        return this.client.name
+      }
+
+      @Expose({name: 'clinetCode'})
+      transformClientCode(){
+        return this.client.client_code
+      }
+
+      @Expose({name: "category"})
+      tranformcategory(){
+        return this.category.name
+      }
+
+      @Expose({name: "location"})
+      transformlocation(){
+        return this.locations[0].location
+      }
+
+      @Expose({name: "address"})
+      transformAddress(){
+        return this.locations[0].address_1
+      }
+
+      @Expose({name: 'city'})
+      transformCity(){
+        return this.locations[0].city
+      }
+
+      @Expose({name: 'pincode'})
+      transformPincode(){
+        return this.locations[0].pincode
+      }
+
+      @Expose({name: 'state'})
+      transformState(){
+        return this.locations[0].state
+      }
+
+      @Expose({name: 'country'})
+      transformCountry(){
+        return this.locations[0].country
+      }
+
+    
+      constructor(partial: Partial<ResponseDto>){
+        Object.assign(this, partial)
+      }
+  }
